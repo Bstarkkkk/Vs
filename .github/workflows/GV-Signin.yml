@@ -25,13 +25,6 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: 🗂️ 缓存 Hash 破解模块
-        id: cache-captcha-solver
-        uses: actions/cache@v4
-        with:
-          path: captcha_solver
-          key: captcha-solver-chromium-latest-v1
-
       - name: 🛡️ 启动 GOST 代理转发
         if: ${{ env.GOST_PROXY != '' }}
         env:
@@ -49,28 +42,21 @@ jobs:
           curl -s -x http://127.0.0.1:8080 https://api.ipify.org \
             | sed 's/\([0-9]*\.[0-9]*\.[0-9]*\.\)[0-9]*/\1**/g'
 
-      - name: 🛠️ 安装系统依赖
+      - name: 🛠️ 安装系统依赖 (含 xdotool 过盾依赖)
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y google-chrome-stable xvfb
+          sudo apt-get install -y \
+            google-chrome-stable \
+            xvfb \
+            x11-utils \
+            xdotool \
+            scrot
 
       - name: 🐍 安装 Python 依赖
         run: pip install seleniumbase
 
       - name: 🔧 安装 ChromeDriver
         run: seleniumbase install chromedriver
-
-      - name: 🧩 初始化浏览器环境
-        if: steps.cache-captcha-solver.outputs.cache-hit != 'true'
-        env:
-          SOLVER_URL: ${{ secrets.SOLVER_URL }}
-        run: |
-          wget -q "$SOLVER_URL" -O solver.zip
-          unzip solver.zip -d solver_raw
-          MANIFEST=$(find solver_raw -name "manifest.json" | head -1)
-          mkdir -p captcha_solver
-          cp -r "$(dirname $MANIFEST)/." captcha_solver/
-          rm -rf solver_raw solver.zip
 
       - name: 🚀 运行签到脚本
         env:
