@@ -3,7 +3,7 @@ name: Vs-Signin
 on:
   workflow_dispatch:
   schedule:
-    - cron: '22 5 * * *'   # 每天 UTC 01:00（北京时间 09:00）
+    - cron: '22 5 * * *'   # 每天 UTC 05:22（北京时间 13:22）
 
 jobs:
   signin:
@@ -42,7 +42,7 @@ jobs:
           curl -s -x http://127.0.0.1:8080 https://api.ipify.org \
             | sed 's/\([0-9]*\.[0-9]*\.[0-9]*\.\)[0-9]*/\1**/g'
 
-      - name: 🛠️ 安装系统依赖 (含 xdotool 过盾依赖)
+      - name: 🛠️ 安装系统依赖
         run: |
           sudo apt-get update -q
           sudo apt-get install -y \
@@ -53,10 +53,9 @@ jobs:
             scrot
 
       - name: 🐍 安装 Python 依赖
-        run: pip install seleniumbase
-
-      - name: 🔧 安装 ChromeDriver
-        run: seleniumbase install chromedriver
+        run: |
+          pip install seleniumbase
+          seleniumbase install chromedriver
 
       - name: 🚀 运行签到脚本
         env:
